@@ -47,7 +47,6 @@ class ExpressServer {
 	private _beforeSetup() {
 		this._app.use(express.json());
 		this._app.use(express.urlencoded({ extended: true }));
-		this._app.use(express.static(path.resolve(".src/API/public")));
 		this._app.use(express.static(path.join(__dirname, "public")));
 		this._app.use(addTimestampAndDuration);
 	}
