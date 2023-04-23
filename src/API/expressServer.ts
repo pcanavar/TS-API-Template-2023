@@ -4,6 +4,7 @@ import express from "express";
 import { Request, Response, NextFunction } from "express";
 import fs from "fs";
 import path from "path";
+import log from "@log";
 
 // Necessary for async error handling
 require("express-async-errors");
@@ -59,9 +60,9 @@ class ExpressServer {
 		}
 
 		if (this._debug) {
-			console.log("Debugging enabled");
+			log.debug("Debugging enabled");
 			this._app.use((req, res, next) => {
-				console.log(`${req.method} ${req.path}`);
+				log.debug(`${req.method} ${req.path}`);
 				next();
 			});
 		}
@@ -69,7 +70,8 @@ class ExpressServer {
 
 	// Will automatically add all routes in the routes folder
 	private _setupRoutes() {
-		console.log("\nSetting up routes\n");
+		log.info("Setting up routes");
+		console.log("\n");
 
 		this._app.get("/", (req, res) => {
 			res.send("Hello World!");
@@ -91,12 +93,13 @@ class ExpressServer {
 
 			if (typeof router === "function") {
 				this._app.use(endpoint.formattedPath, router);
-				console.log(`	• Loaded ${endpoint.endpoint}`);
+				log.info(`	• Loaded ${endpoint.endpoint}`);
 			} else {
-				console.error(`Endpoint ${endpoint.relativeDir} is invalid`);
+				log.error(`Endpoint ${endpoint.relativeDir} is invalid`);
 			}
 		}
-		console.log("\nRoutes registered\n");
+		console.log("\n");
+		log.info("Routes registered\n");
 	}
 
 	// This function is used to add things to the express app after the routes are added
@@ -127,7 +130,7 @@ class ExpressServer {
 	// Listens for requests on the specified port
 	private _listen(): void {
 		this._app.listen(this._port, () => {
-			console.log(`Server running at http://localhost:${this._port}`);
+			log.info(`Server running at http://localhost:${this._port}`);
 		});
 	}
 

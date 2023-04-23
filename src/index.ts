@@ -2,4 +2,4 @@
 
 import API from "@api";
 
-API.start();
+API.start(true);
