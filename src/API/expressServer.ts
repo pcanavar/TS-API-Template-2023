@@ -1,17 +1,20 @@
 /** @format */
 
-import express from "express";
-import { Request, Response, NextFunction } from "express";
-import fs from "fs";
-import path from "path";
 import log from "@log";
-import ApiError from "@apierror";
+import figletLogo from "@templates/figletLogo";
+import errorHandler from "@middleware/errorHandler";
+import notFoundHandler from "@API/middleware/notFoundHandler";
+import express, { Request, Response, NextFunction } from "express";
+import fs from "fs";
+import cors from "cors";
+import path from "path";
 
-// Necessary for async error handling
+/**
+ * Necessary for async error handling
+ */
 require("express-async-errors");
 
 class ExpressServer {
-	// Private variables
 	private _app: express.Application;
 	private _port: number;
 	private _debug: boolean;
@@ -20,96 +23,6 @@ class ExpressServer {
 		this._app = express();
 		this._port = port;
 		this._debug = debug;
-	}
-
-	// This function is used to add things to the express app before the routes are added
-	private _beforeSetup() {
-		this._app.use(express.json());
-		this._app.use(express.urlencoded({ extended: true }));
-		this._app.use(express.static(path.join(__dirname, "public")));
-		this._app.use(addTimestampAndDuration);
-	}
-
-	// Enables debugging mode.
-	// This will log all requests to the console.
-	private _setupDebug(debugOverride?: boolean): void {
-		if (debugOverride !== undefined) {
-			this._debug = debugOverride;
-		}
-
-		if (this._debug) {
-			log.debug("Debugging enabled");
-			this._app.use((req, res, next) => {
-				log.debug(`${req.method} ${req.path}`);
-				next();
-			});
-		}
-	}
-
-	// Will automatically add all routes in the routes folder
-	private _setupRoutes() {
-		log.info("Setting up routes");
-		console.log("\n");
-
-		this._app.get("/", (req, res) => {
-			res.send("Hello World!");
-		});
-
-		this._app.get("/healthz", (req, res) => {
-			res.send({ healthz: "OK" });
-		});
-
-		const endpointsPath = fs.realpathSync(__dirname + "/endpoints");
-		const files: fs.PathLike[] = getFilePathsInFolder(endpointsPath);
-		const filesAndRelativePaths: RelativaPaths[] = getRelativePaths(
-			files,
-			endpointsPath,
-		);
-
-		for (const endpoint of filesAndRelativePaths) {
-			const router = require(endpoint.dir.toString()).default;
-
-			if (typeof router === "function") {
-				this._app.use(endpoint.formattedPath, router);
-				log.info(`	• Loaded ${endpoint.endpoint}`);
-			} else {
-				log.error(`Endpoint ${endpoint.relativeDir} is invalid`);
-			}
-		}
-		console.log("\n");
-		log.info("Routes registered\n");
-	}
-
-	// This function is used to add things to the express app after the routes are added
-	// Examples of things that can be added here are error handlers and 404 page
-	private _afterSetup() {
-		this._app.use((req: Request, res: Response) => {
-			res.status(404).sendFile(
-				path.resolve("./src/API/templates/404.html"),
-			);
-		});
-
-		this._app.use(
-			(error: Error, req: Request, res: Response, next: NextFunction) => {
-				if (error instanceof ApiError) {
-					res.status(error.httpStatus).json({
-						...error,
-					});
-				} else {
-					res.status(500).json({
-						message: "Unkown Error",
-						status: 500,
-					});
-				}
-			},
-		);
-	}
-
-	// Listens for requests on the specified port
-	private _listen(): void {
-		this._app.listen(this._port, () => {
-			log.info(`Server running at http://localhost:${this._port}`);
-		});
 	}
 
 	/**
@@ -145,23 +58,100 @@ class ExpressServer {
 	 * @param originalFileName The original file name (__filename)
 	 * @returns The endpoint name
 	 */
-	public getEndpointNameFromPath(originalFileName: string): string {
-		const filename = path.basename(
-			originalFileName,
-			path.extname(originalFileName),
-		);
+	public getPathFromFileName(originalFileName: string): string {
+		const filename = path.parse(originalFileName).name;
 		const filePath = `/${filename}`;
 		return filePath;
+	}
+
+	/**
+	 * This function is used to add things to the express app before the routes are added
+	 */
+	private _beforeSetup() {
+		this._app.use(express.json());
+		this._app.use(cors());
+		this._app.use(express.urlencoded({ extended: true }));
+		this._app.use(express.static(path.join(__dirname, "public")));
+		this._app.use(addTimestampAndDuration);
+	}
+
+	/**
+	 * Enables debugging mode.
+	 * This will log all requests to the console.
+	 * @param debugOverride Enables debugging mode if true
+	 */
+	private _setupDebug(debugOverride?: boolean): void {
+		if (debugOverride !== undefined) {
+			this._debug = debugOverride;
+		}
+
+		if (this._debug) {
+			log.debug("Debugging enabled");
+			this._app.use((req, res, next) => {
+				log.debug(`${req.method} ${req.path}`);
+				next();
+			});
+		}
+	}
+
+	/**
+	 * Will automatically add all routes in the routes folder
+	 */
+	private _setupRoutes() {
+		log.info("Loading ./endpoints files:");
+
+		this._app.get("/", (req, res) => {
+			res.send("Hello World!");
+		});
+
+		this._app.get("/healthz", (req, res) => {
+			res.send({ healthz: "OK" });
+		});
+
+		const endpointsPath = fs.realpathSync(__dirname + "/endpoints");
+		const files: fs.PathLike[] = getFilePathsInFolder(endpointsPath);
+		const filesAndRelativePaths: RelativaPaths[] = getRelativePaths(
+			files,
+			endpointsPath,
+		);
+
+		for (const endpoint of filesAndRelativePaths) {
+			const router = require(endpoint.dir.toString()).default;
+
+			if (typeof router === "function") {
+				this._app.use(endpoint.formattedPath, router);
+				log.info(`	• Loaded ${endpoint.endpoint}`);
+			} else {
+				log.error(`Endpoint ${endpoint.relativeDir} is invalid`);
+			}
+		}
+		log.info("Loading Complete");
+	}
+
+	/**
+	 * This function is used to add things to the express app after the routes are added
+	 * Examples of things that can be added here are error handlers and 404 page
+	 */
+	private _afterSetup() {
+		this._app.use(notFoundHandler);
+		this._app.use(errorHandler);
+	}
+
+	/**
+	 * Listens for requests on the specified port
+	 */
+	private _listen(): void {
+		this._app.listen(this._port, () => {
+			log.info(figletLogo(this._port));
+		});
 	}
 }
 
 const expressServer = new ExpressServer();
 
 export default expressServer;
-export { expressServer, ApiError };
 
 /**
- *
  * @param basePath Path to be used for the search of files
  * @returns Array of paths to files
  */
@@ -189,8 +179,10 @@ function getFilePathsInFolder(basePath: fs.PathLike): fs.PathLike[] {
 	return files;
 }
 
-// This is the interface for the relative paths
-// It is used to store the relative path, the file name, the file extension and the endpoint
+/**
+ * This is the interface for the relative paths
+ * It is used to store the relative path, the file name, the file extension and the endpoint
+ */
 interface RelativaPaths {
 	dir: fs.PathLike;
 	relativeDir: fs.PathLike;
@@ -202,7 +194,6 @@ interface RelativaPaths {
 }
 
 /**
- *
  * @param pathArray Array of paths to be converted to relative paths
  * @param basePath Path to be used as the base path
  * @returns Array of relative paths
@@ -238,9 +229,11 @@ function getRelativePaths(
 	return relativePaths;
 }
 
-// Middleware to add a timestamp and duration to the response body
-// This is used to calculate the time taken to process the request
-// This is useful for debugging and performance testing
+/**
+ * Middleware to add a timestamp and duration to the response body
+ * This is used to calculate the time taken to process the request
+ * This is useful for debugging and performance testing
+ */
 function addTimestampAndDuration(
 	req: Request,
 	res: Response,

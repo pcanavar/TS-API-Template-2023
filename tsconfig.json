@@ -34,7 +34,8 @@
 			"@api": ["./src/API/expressServer"],
 			"@apierror": ["./src/API/ApiError"],
 			"@log": ["./src/Logger"],
-			"@middleware": ["./src/API/middleware/*"]
+			"@middleware/*": ["./src/API/middleware/*"],
+			"@templates/*": ["./src/API/templates/*"]
 		} /* Specify a set of entries that re-map imports to additional lookup locations. */,
 		// "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
 		// "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */
