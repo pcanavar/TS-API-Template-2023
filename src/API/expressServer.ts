@@ -9,6 +9,7 @@ import { createDoc } from "apidoc";
 import fs from "fs";
 import cors from "cors";
 import path from "path";
+import config from "@config";
 
 /**
  * Necessary for async error handling
@@ -20,7 +21,7 @@ class ExpressServer {
 	private _port: number;
 	private _debug: boolean;
 
-	constructor(port: number = 3000, debug: boolean = false) {
+	constructor(port: number = config.PORT, debug: boolean = false) {
 		this._app = express();
 		this._port = port;
 		this._debug = debug;

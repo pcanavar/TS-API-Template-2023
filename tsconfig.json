@@ -33,6 +33,7 @@
 			"@*": ["./src/*"],
 			"@api": ["./src/API/expressServer"],
 			"@apierror": ["./src/API/ApiError"],
+			"@config": ["./src/config"],
 			"@log": ["./src/Logger"],
 			"@middleware/*": ["./src/API/middleware/*"],
 			"@templates/*": ["./src/API/templates/*"]

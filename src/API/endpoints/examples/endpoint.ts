@@ -16,8 +16,9 @@ const pathFromFileName = api.getPathFromFileName(__filename);
  * @apiGroup All
  *
  */
+
 router.get(pathFromFileName, (req, res) => {
-	res.status(200).json({ hello: "world" });
+	res.status(200).json({ Hello: "World" });
 });
 
 export default router;

@@ -1,4 +1,5 @@
 /** @format */
+import config from "@config";
 
 export default (port: number) => `
                                                                                                                                                  
@@ -13,8 +14,9 @@ export default (port: number) => `
                                                                                                            888                                   
                                                                                                            888                                   
                                                                                                            888                                   
-                                           TS-API Boilerplate                                                                                    
-                                          Running on port ${port}                                                                                
+                                            TS-API Boilerplate                                                                                   
+                                             Environment: ${config.NODE_ENV}                                                                     
+                                           Running on port ${port}                                                                               
                                       http://localhost:${port}/private/                                                                          
                                                                                                                                                  
 `;
