@@ -1,4 +1,13 @@
 #
+# Custom entries
+#
+
+# Docs
+src/API/public/docs
+src/API/public/private
+
+
+#
 # https://github.com/microsoft/TypeScript-Node-Starter/blob/master/.gitignore
 #
 

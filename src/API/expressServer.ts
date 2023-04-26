@@ -5,6 +5,7 @@ import figletLogo from "@templates/figletLogo";
 import errorHandler from "@middleware/errorHandler";
 import notFoundHandler from "@API/middleware/notFoundHandler";
 import express, { Request, Response, NextFunction } from "express";
+import { createDoc } from "apidoc";
 import fs from "fs";
 import cors from "cors";
 import path from "path";
@@ -68,11 +69,43 @@ class ExpressServer {
 	 * This function is used to add things to the express app before the routes are added
 	 */
 	private _beforeSetup() {
+		this._generateDocs();
 		this._app.use(express.json());
 		this._app.use(cors());
 		this._app.use(express.urlencoded({ extended: true }));
 		this._app.use(express.static(path.join(__dirname, "public")));
 		this._app.use(addTimestampAndDuration);
+	}
+
+	/**
+	 *
+	 */
+	private _generateDocs() {
+		const publicDocs = createDoc({
+			src: path.join(__dirname, "endpoints"),
+			config: path.join(__dirname, "docsConfig.ts"),
+			dest: path.join(__dirname, "public", "docs"),
+			template: path.join(__dirname, "templates", "docs"),
+			apiprivate: false,
+			colorize: true,
+		});
+
+		if (typeof publicDocs !== "boolean") {
+			log.info("API Docs generated");
+		}
+
+		const privateDocs = createDoc({
+			src: path.resolve(__dirname, "endpoints"),
+			config: path.resolve(__dirname, "docsConfig.ts"),
+			dest: path.resolve(__dirname, "public", "private"),
+			template: path.resolve(__dirname, "templates", "docs"),
+			apiprivate: true,
+			colorize: true,
+		});
+
+		if (typeof privateDocs !== "boolean") {
+			log.info("Private API Docs generated");
+		}
 	}
 
 	/**
@@ -101,7 +134,7 @@ class ExpressServer {
 		log.info("Loading ./endpoints files:");
 
 		this._app.get("/", (req, res) => {
-			res.send("Hello World!");
+			res.redirect("/docs");
 		});
 
 		this._app.get("/healthz", (req, res) => {
