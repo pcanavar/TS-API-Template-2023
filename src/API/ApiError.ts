@@ -20,10 +20,10 @@ class ApiError extends Error {
 		errorCode?: string;
 	}) {
 		super(errorObj.message);
-		this.message = errorObj.message ?? "UNKOWN ERROR";
-		this.userMessage = errorObj.message ?? "UNKOWN ERROR";
 		this.httpStatus = errorObj.httpStatus ?? 500;
 		this.errorCode = errorObj.errorCode;
+		this.message = errorObj.message ?? "UNKOWN ERROR";
+		this.userMessage = errorObj.message ?? "UNKOWN ERROR";
 		log.error(this.message, this);
 	}
 }
