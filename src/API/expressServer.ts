@@ -78,6 +78,15 @@ class ExpressServer {
 	}
 
 	/**
+	 * This function is used to add things to the express app after the routes are added
+	 * Examples of things that can be added here are error handlers and 404 page
+	 */
+	private _afterSetup() {
+		this._app.use(notFoundHandler);
+		this._app.use(errorHandler);
+	}
+
+	/**
 	 *
 	 */
 	private _generateDocs() {
@@ -88,6 +97,7 @@ class ExpressServer {
 			template: path.join(__dirname, "templates", "docs"),
 			apiprivate: false,
 			colorize: true,
+			silent: true,
 		});
 
 		if (typeof publicDocs !== "boolean") {
@@ -101,6 +111,7 @@ class ExpressServer {
 			template: path.resolve(__dirname, "templates", "docs"),
 			apiprivate: true,
 			colorize: true,
+			silent: true,
 		});
 
 		if (typeof privateDocs !== "boolean") {
@@ -159,15 +170,6 @@ class ExpressServer {
 			}
 		}
 		log.info("Loading Complete");
-	}
-
-	/**
-	 * This function is used to add things to the express app after the routes are added
-	 * Examples of things that can be added here are error handlers and 404 page
-	 */
-	private _afterSetup() {
-		this._app.use(notFoundHandler);
-		this._app.use(errorHandler);
 	}
 
 	/**
