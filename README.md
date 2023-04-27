@@ -30,3 +30,5 @@ Start the server
 - Adds unixTimestamp and duration to all responses that are JSON.
 - Handles pages not found with a html 404 page template
 - Healthz endpoint for easy cluster deployment.
+- ApiDoc auto generated.
+- Logger with winston saves logs to ./logs folder.
