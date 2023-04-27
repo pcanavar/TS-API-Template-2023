@@ -91,11 +91,22 @@ class ExpressServer {
 	 *
 	 */
 	private _generateDocs() {
+		const configFileName = "docsConfig";
+		const configFileExtensions = [".js", ".ts"];
+		const configFilePath = fs
+			.readdirSync(__dirname)
+			.filter(
+				(file) =>
+					file.startsWith(configFileName) &&
+					configFileExtensions.includes(path.extname(file)),
+			)
+			.map((file) => path.join(__dirname, file))[0];
+
 		const publicDocs = createDoc({
-			src: path.join(__dirname, "endpoints"),
-			config: path.join(__dirname, "docsConfig.ts"),
-			dest: path.join(__dirname, "public", "docs"),
-			template: path.join(__dirname, "templates", "docs"),
+			src: path.resolve(__dirname, "./endpoints"),
+			config: configFilePath,
+			dest: path.resolve(__dirname, "./public/docs"),
+			template: path.resolve(__dirname, "./templates/docs"),
 			apiprivate: false,
 			colorize: true,
 			silent: true,
@@ -106,10 +117,10 @@ class ExpressServer {
 		}
 
 		const privateDocs = createDoc({
-			src: path.resolve(__dirname, "endpoints"),
-			config: path.resolve(__dirname, "docsConfig.ts"),
-			dest: path.resolve(__dirname, "public", "private"),
-			template: path.resolve(__dirname, "templates", "docs"),
+			src: path.resolve(__dirname, "./endpoints"),
+			config: configFilePath,
+			dest: path.resolve(__dirname, "./public/private"),
+			template: path.resolve(__dirname, "./templates/docs"),
 			apiprivate: true,
 			colorize: true,
 			silent: true,
