@@ -88,7 +88,7 @@ class ExpressServer {
 	}
 
 	/**
-	 *
+	 * Generates Api Docs
 	 */
 	private _generateDocs() {
 		const configFileName = "docsConfig";
